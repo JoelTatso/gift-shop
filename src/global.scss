@@ -36,3 +36,18 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
+ion-badge{
+    position:absolute;
+    top:0;
+    right:0;
+    border-radius:50%;
+    width:1.1rem;
+    height:1.1rem;
+    margin:0 -0.4rem 0 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    ion-text{
+      font-size:0.6rem;
+    } 
+  }

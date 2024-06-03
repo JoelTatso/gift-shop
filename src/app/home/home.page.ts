@@ -1,27 +1,41 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { 
-				IonHeader, IonToolbar, IonTitle, IonContent,IonRow,IonCol,IonThumbnail,IonImg,IonCard,IonLabel,
-				IonText,IonIcon,IonSearchbar, SearchbarChangeEventDetail
-			 } 
-	from '@ionic/angular/standalone';
-			 
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+	IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, IonThumbnail, IonImg, IonCard, IonLabel,
+	IonText, IonIcon, IonSearchbar, IonButtons, IonButton, IonBadge
+} from '@ionic/angular/standalone';
 import { ApiService } from '../services/api.service';
 import { addIcons } from 'ionicons';
-import { star } from 'ionicons/icons'
-import { IonSearchbarCustomEvent } from '@ionic/core';
+import { bagHandle, cart, star } from 'ionicons/icons';
+import { RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
+import { CartService } from '../services/cart.service';
+import { Subscription } from 'rxjs';
+
+
 
 @Component({
 	selector: 'app-home',
 	standalone: true,
 	imports: [
-		IonHeader, IonToolbar, IonTitle, IonContent,IonRow,IonCol,IonThumbnail,IonImg,IonCard,IonLabel,IonText,IonIcon,IonSearchbar
+		IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, IonThumbnail, IonImg, IonCard, IonLabel, 
+		IonText, IonIcon, IonSearchbar,RouterLink, CurrencyPipe,IonButtons, IonButton, IonBadge
 	],
 	template: `
-		<ion-header>
+		<ion-header mode="ios">
 			<ion-toolbar>
 				<ion-title>
 					Gift Shop
 				</ion-title>
+					<ion-buttons slot="end">
+					<ion-button size="large" fill="clear" color="primary">
+						<ion-icon name="bag-handle" slot="icon-only"></ion-icon>
+						@if(totalItemCart > 0){
+							<ion-badge>
+								<ion-text>{{ totalItemCart }}</ion-text>
+							</ion-badge>
+						}
+					</ion-button>
+				  </ion-buttons>
 			</ion-toolbar>
 			<ion-toolbar>
 				<ion-searchbar 
@@ -31,6 +45,7 @@ import { IonSearchbarCustomEvent } from '@ionic/core';
 						(ionChange)="onSearchChange($event)" 
 						debounce="800" 
 						class="searchBar"
+						
 			   ></ion-searchbar>
 			</ion-toolbar>
 		</ion-header>
@@ -39,7 +54,7 @@ import { IonSearchbarCustomEvent } from '@ionic/core';
 			<ion-row>
 			@for(item of items; track item.id){
 				<ion-col sizeLg="3" sizeMd="4" sizeSm="6" sizeXl="3" sizeXs="6">
-						<ion-card>
+						<ion-card [routerLink]="['/', 'home', 'gifts', item.id]">
 							<ion-thumbnail>
 								<ion-img [src]="item?.cover"></ion-img>
 							</ion-thumbnail>
@@ -51,7 +66,7 @@ import { IonSearchbarCustomEvent } from '@ionic/core';
 							<ion-label>
 								<p>
 									<ion-text color="dark">
-										<strong>{{ item?.price }}</strong>
+										<strong>{{ item?.price | currency}}</strong>
 									</ion-text>
 
 									<ion-text class="rating">
@@ -66,7 +81,7 @@ import { IonSearchbarCustomEvent } from '@ionic/core';
 			</ion-row>
 		</ion-content>
 	`,
-	styles:`
+	styles: `
 		ion-card{
 			--background: var(--ion-color-light);
 			height:14rem;
@@ -102,41 +117,52 @@ import { IonSearchbarCustomEvent } from '@ionic/core';
 		}
 	`,
 })
-export class HomePage implements OnInit{
+export class HomePage implements OnInit ,OnDestroy{
 
 
-	constructor(){
-		 addIcons({
-			star
-		 })
+	constructor() {
+		addIcons({
+			star,
+			bagHandle
+		});
 	}
-	
-	private api = inject(ApiService)
-	items !: any[]
-	searchValue !: string
+
+	private api = inject(ApiService);
+  private cartService = inject(CartService)
+	items!: any[];
+	searchValue!: string;
+	totalItemCart = 0
+  cartSub !: Subscription
 
 	ngOnInit(): void {
-		this.items = this.api.getItems()
+		this.items = this.api.getItems();
+    this.cartSub = this.cartService.cart.subscribe({
+      next: (cart:any) => {
+        this.totalItemCart = cart ? cart?.totalItem : 0
+      }
+    })// souscription a la carte pour recevoir le nombre d'item qu'elle contient
 	}
 
-	seachItems(){
-		this.items = this.api.getItems().filter((item) => 
-			item.name.toLowerCase().includes(this.searchValue)
-		)
-	}//recherche de la valeur de l'item a partir de l'entrée
+	seachItems() {
+		this.items = this.api.getItems().filter((item) => item.name.toLowerCase().includes(this.searchValue)
+		);
+	} //recherche de la valeur de l'item a partir de l'entrée
 
-	querySearch(){
-		this.items = []
-		if(this.searchValue.length > 0){
-			this.seachItems()
-		}else{
-			this.items = [...this.api.getItems()]
+	querySearch() {
+		this.items = [];
+		if (this.searchValue.length > 0) {
+			this.seachItems();
+		} else {
+			this.items = [...this.api.getItems()];
 		}
-	}// Modification des items après la recherche
+	} // Modification des items après la recherche
 
-	onSearchChange($event:any) {
-			this.searchValue = $event.detail.value.toLowerCase()
-			this.querySearch()
-	}//Execution de la recherche a partie de l'input Search
+	onSearchChange($event: any) {
+		this.searchValue = $event.detail.value.toLowerCase();
+		this.querySearch();
+	} //Execution de la recherche a partie de l'input Search
 
+  ngOnDestroy(): void {
+    if(this.cartSub) this.cartSub.unsubscribe()
+  }// unsuscribe à la desctruction du component
 }

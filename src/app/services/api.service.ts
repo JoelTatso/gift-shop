@@ -138,4 +138,8 @@ export class ApiService {
     return this.items;
   }
 
+  getItem(id:string):any{
+    return this.items.find((item) => item.id === id)
+  }
+
 }
