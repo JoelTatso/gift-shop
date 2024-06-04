@@ -27,7 +27,7 @@ import { Subscription } from 'rxjs';
 					Gift Shop
 				</ion-title>
 					<ion-buttons slot="end">
-					<ion-button size="large" fill="clear" color="primary">
+					<ion-button size="large" fill="clear" color="primary" [routerLink]="['/','home','cart']">
 						<ion-icon name="bag-handle" slot="icon-only"></ion-icon>
 						@if(totalItemCart > 0){
 							<ion-badge>
@@ -128,25 +128,28 @@ export class HomePage implements OnInit ,OnDestroy{
 	}
 
 	private api = inject(ApiService);
-  private cartService = inject(CartService)
+	private cartService = inject(CartService)
 	items!: any[];
 	searchValue!: string;
 	totalItemCart = 0
-  cartSub !: Subscription
+	cartSub !: Subscription
 
 	ngOnInit(): void {
 		this.items = this.api.getItems();
-    this.cartSub = this.cartService.cart.subscribe({
-      next: (cart:any) => {
-        this.totalItemCart = cart ? cart?.totalItem : 0
-      }
-    })// souscription a la carte pour recevoir le nombre d'item qu'elle contient
+      	this.cartSub = this.cartService.cart.subscribe({
+			next: (cart:any) => {
+				this.totalItemCart = cart ? cart?.totalItem : 0
+			}
+   		 })// souscription a la carte pour recevoir le nombre d'item qu'elle contient
 	}
 
+	ngOnDestroy(): void {
+		if(this.cartSub) this.cartSub.unsubscribe()
+	}// unsuscribe à la desctruction du component
+
 	seachItems() {
-		this.items = this.api.getItems().filter((item) => item.name.toLowerCase().includes(this.searchValue)
-		);
-	} //recherche de la valeur de l'item a partir de l'entrée
+		this.items = this.api.getItems().filter((item) => item.name.toLowerCase().includes(this.searchValue))
+	} //recherche des items a partir de l'entrée et modification du tablea d'items
 
 	querySearch() {
 		this.items = [];
@@ -155,14 +158,10 @@ export class HomePage implements OnInit ,OnDestroy{
 		} else {
 			this.items = [...this.api.getItems()];
 		}
-	} // Modification des items après la recherche
+	} // Modification de la liste d' items en fonction la recherche
 
 	onSearchChange($event: any) {
 		this.searchValue = $event.detail.value.toLowerCase();
 		this.querySearch();
 	} //Execution de la recherche a partie de l'input Search
-
-  ngOnDestroy(): void {
-    if(this.cartSub) this.cartSub.unsubscribe()
-  }// unsuscribe à la desctruction du component
 }

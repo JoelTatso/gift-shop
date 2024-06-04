@@ -3,7 +3,7 @@ import {
   IonContent,IonFooter,IonButton, IonHeader, IonTitle, IonToolbar , IonButtons,
   IonBackButton,IonIcon,IonItem,IonLabel,IonText,IonBadge,IonRow,IonCol
 } from '@ionic/angular/standalone';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NavController } from '@ionic/angular/standalone'
 import { ApiService } from 'src/app/services/api.service';
 import { addIcons } from 'ionicons';
@@ -18,7 +18,8 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar, IonButtons,IonBackButton,IonIcon,IonItem,IonLabel,
-    UpperCasePipe,CurrencyPipe,IonText,IonFooter,IonButton,TitleCasePipe,IonBadge,IonCol,IonRow
+    UpperCasePipe,CurrencyPipe,IonText,IonFooter,IonButton,TitleCasePipe,IonBadge,IonCol,IonRow,
+    RouterLink
   ],
   template: `
     <ion-content fullscreen="true">
@@ -28,8 +29,9 @@ import { Subscription } from 'rxjs';
             <ion-back-button defaultHref="/home" color="light"></ion-back-button>
           </ion-buttons>
           <ion-buttons slot="end">
-            <ion-button size="large" fill="clear" color="light">
-              <ion-icon name="bag-handle"></ion-icon>
+            <ion-button size="large" fill="clear" color="light"
+              [routerLink]="['/','home','gifts',item?.id,'cart']">
+              <ion-icon name="bag-handle" slot="icon-only"></ion-icon>
               @if(totalItemCart > 0){
                 <ion-badge>
                   <ion-text>{{ totalItemCart }}</ion-text>
@@ -159,6 +161,7 @@ export class ItemDetailPage implements OnInit, OnDestroy {
   totalItemCart = 0
   cartSub !: Subscription
 
+
   constructor(){
     addIcons({
       star,
@@ -176,6 +179,10 @@ export class ItemDetailPage implements OnInit, OnDestroy {
     })//souscription a la carte pour recevoir le nombre d'item qu'elle contient
   }
 
+  ngOnDestroy(): void {
+    if(this.cartSub) this.cartSub.unsubscribe()
+  }// unsuscribe de la carte à la desctruction du component
+
   getItem(){
     const id = this.router.snapshot.paramMap.get('id')!
     if(!id || id === '0'){
@@ -183,7 +190,7 @@ export class ItemDetailPage implements OnInit, OnDestroy {
       return;
     }
     this.item = this.api.getItem(id)
-  }// recupere un item grace a son ID
+  }// recupere un item dans la liste d'item grace a son ID
 
   addedText(){
     this.addToBag = 'Added to Bag'
@@ -192,13 +199,8 @@ export class ItemDetailPage implements OnInit, OnDestroy {
     },1000)
   }// changment de text pour l'ajout carte
 
-  
   addItem(){
     const result = this.cartService.addQuantity(this.item)
     this.addedText()
   }
-
-  ngOnDestroy(): void {
-    if(this.cartSub) this.cartSub.unsubscribe()
-  }// unsuscribe à la desctruction du component
 }
