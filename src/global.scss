@@ -35,3 +35,23 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+*{
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+ion-badge{
+    position:absolute;
+    top:0;
+    right:0;
+    border-radius:50%;
+    width:1.1rem;
+    height:1.1rem;
+    margin:0 -0.2rem 0 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    ion-text{
+      font-size:0.6rem;
+    } 
+  }
