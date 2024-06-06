@@ -3,12 +3,12 @@ import {
 	IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, IonThumbnail, IonImg, IonCard, IonLabel,
 	IonText, IonIcon, IonSearchbar, IonButtons, IonButton, IonBadge
 } from '@ionic/angular/standalone';
-import { ApiService } from '../services/api.service';
+import { ApiService } from '../../services/api.service';
 import { addIcons } from 'ionicons';
 import { bagHandle, cart, star } from 'ionicons/icons';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
-import { CartService } from '../services/cart.service';
+import { CartService } from '../../services/cart.service';
 import { Subscription } from 'rxjs';
 
 
@@ -17,8 +17,8 @@ import { Subscription } from 'rxjs';
 	selector: 'app-home',
 	standalone: true,
 	imports: [
-		IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, IonThumbnail, IonImg, IonCard, IonLabel, 
-		IonText, IonIcon, IonSearchbar,RouterLink, CurrencyPipe,IonButtons, IonButton, IonBadge
+		IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, IonThumbnail, IonImg, IonCard, IonLabel,
+		IonText, IonIcon, IonSearchbar, RouterLink, CurrencyPipe, IonButtons, IonButton, IonBadge
 	],
 	template: `
 		<ion-header mode="ios">
@@ -117,7 +117,7 @@ import { Subscription } from 'rxjs';
 		}
 	`,
 })
-export class HomePage implements OnInit ,OnDestroy{
+export class Items implements OnInit, OnDestroy {
 
 
 	constructor() {
@@ -136,15 +136,15 @@ export class HomePage implements OnInit ,OnDestroy{
 
 	ngOnInit(): void {
 		this.items = this.api.getItems();
-      	this.cartSub = this.cartService.cart.subscribe({
-			next: (cart:any) => {
+		this.cartSub = this.cartService.cart.subscribe({
+			next: (cart: any) => {
 				this.totalItemCart = cart ? cart?.totalItem : 0
 			}
-   		 })// souscription a la carte pour recevoir le nombre d'item qu'elle contient
+		})// souscription a la carte pour recevoir le nombre d'item qu'elle contient
 	}
 
 	ngOnDestroy(): void {
-		if(this.cartSub) this.cartSub.unsubscribe()
+		if (this.cartSub) this.cartSub.unsubscribe()
 	}// unsuscribe à la desctruction du component
 
 	seachItems() {

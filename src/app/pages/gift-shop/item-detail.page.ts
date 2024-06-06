@@ -1,14 +1,14 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { 
-  IonContent,IonFooter,IonButton, IonHeader, IonTitle, IonToolbar , IonButtons,
-  IonBackButton,IonIcon,IonItem,IonLabel,IonText,IonBadge,IonRow,IonCol
+import {
+  IonContent, IonFooter, IonButton, IonHeader, IonTitle, IonToolbar, IonButtons,
+  IonBackButton, IonIcon, IonItem, IonLabel, IonText, IonBadge, IonRow, IonCol
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NavController } from '@ionic/angular/standalone'
 import { ApiService } from 'src/app/services/api.service';
 import { addIcons } from 'ionicons';
 import { bagHandle, bagHandleOutline, star } from 'ionicons/icons';
-import { UpperCasePipe,CurrencyPipe,TitleCasePipe } from '@angular/common';
+import { UpperCasePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { CartService } from 'src/app/services/cart.service';
 import { Subscription } from 'rxjs';
 
@@ -17,8 +17,8 @@ import { Subscription } from 'rxjs';
   selector: 'app-item-detail',
   standalone: true,
   imports: [
-    IonContent, IonHeader, IonTitle, IonToolbar, IonButtons,IonBackButton,IonIcon,IonItem,IonLabel,
-    UpperCasePipe,CurrencyPipe,IonText,IonFooter,IonButton,TitleCasePipe,IonBadge,IonCol,IonRow,
+    IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonBackButton, IonIcon, IonItem, IonLabel,
+    UpperCasePipe, CurrencyPipe, IonText, IonFooter, IonButton, TitleCasePipe, IonBadge, IonCol, IonRow,
     RouterLink
   ],
   template: `
@@ -28,7 +28,7 @@ import { Subscription } from 'rxjs';
           <ion-buttons slot="start" mode='md'>
             <ion-back-button defaultHref="/home" color="light"></ion-back-button>
           </ion-buttons>
-          <ion-buttons slot="end">
+          <ion-buttons slot="end" class="ios">
             <ion-button size="large" fill="clear" color="light"
               [routerLink]="['/','home','gifts',item?.id,'cart']">
               <ion-icon name="bag-handle" slot="icon-only"></ion-icon>
@@ -152,7 +152,7 @@ import { Subscription } from 'rxjs';
 })
 export class ItemDetailPage implements OnInit, OnDestroy {
 
-  router  = inject(ActivatedRoute)
+  router = inject(ActivatedRoute)
   navCtrl = inject(NavController)
   api = inject(ApiService)
   cartService = inject(CartService)
@@ -162,7 +162,7 @@ export class ItemDetailPage implements OnInit, OnDestroy {
   cartSub !: Subscription
 
 
-  constructor(){
+  constructor() {
     addIcons({
       star,
       bagHandleOutline,
@@ -173,33 +173,33 @@ export class ItemDetailPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.getItem()
     this.cartSub = this.cartService.cart.subscribe({
-      next: (cart:any) => {
+      next: (cart: any) => {
         this.totalItemCart = cart ? cart?.totalItem : 0
       }
     })//souscription a la carte pour recevoir le nombre d'item qu'elle contient
   }
 
   ngOnDestroy(): void {
-    if(this.cartSub) this.cartSub.unsubscribe()
+    if (this.cartSub) this.cartSub.unsubscribe()
   }// unsuscribe de la carte à la desctruction du component
 
-  getItem(){
+  getItem() {
     const id = this.router.snapshot.paramMap.get('id')!
-    if(!id || id === '0'){
+    if (!id || id === '0') {
       this.navCtrl.back()
       return;
     }
     this.item = this.api.getItem(id)
   }// recupere un item dans la liste d'item grace a son ID
 
-  addedText(){
+  addedText() {
     this.addToBag = 'Added to Bag'
-    setTimeout( () => {
+    setTimeout(() => {
       this.addToBag = null
-    },1000)
+    }, 1000)
   }// changment de text pour l'ajout carte
 
-  addItem(){
+  addItem() {
     const result = this.cartService.addQuantity(this.item)
     this.addedText()
   }

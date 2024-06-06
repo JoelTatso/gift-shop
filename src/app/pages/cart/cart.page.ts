@@ -2,23 +2,27 @@ import { DecimalPipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  IonContent, IonCol, IonRow,IonCard, IonThumbnail, IonImg ,IonHeader,IonIcon,IonTitle, 
-  IonToolbar,IonBackButton,IonList,IonListHeader,IonItemGroup,IonButton, IonButtons,IonText ,IonItem,IonLabel
+  IonContent, IonCol, IonRow, IonCard, IonThumbnail, IonImg, IonHeader, IonIcon, IonTitle,
+  IonToolbar, IonBackButton, IonList, IonListHeader, IonItemGroup, IonButton, IonButtons, IonText,
+  IonItem, IonLabel, IonModal, IonItemDivider,IonFooter
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, bagHandleOutline, remove, trashOutline } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
 import { CartService } from 'src/app/services/cart.service';
+import { CouponsPage } from "./coupons.page";
+import { Strings } from 'src/app/enum/strings.enum';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [
-    IonContent, IonCol, IonRow,IonCard, IonThumbnail, IonImg ,IonHeader, IonTitle,IonIcon, IonToolbar,
-    IonBackButton,DecimalPipe,IonButton,IonList,IonListHeader,IonItemGroup, IonButtons, IonText, IonItem, IonLabel  
+    IonContent, IonCol, IonRow, IonCard, IonThumbnail, IonImg, IonHeader, IonTitle, IonIcon, IonToolbar,
+    IonBackButton, DecimalPipe, IonButton, IonList, IonListHeader, IonItemGroup, IonButtons, IonText, IonItem,
+    IonLabel, IonModal, CouponsPage, IonItemDivider,IonFooter
   ],
   template: `
-    <ion-header mode="ios">
+    <ion-header  mode="ios">
       <ion-toolbar>
         <ion-title color="dark">Cart</ion-title>
         <ion-buttons slot="start">
@@ -42,7 +46,8 @@ import { CartService } from 'src/app/services/cart.service';
         </ion-item>
         <!-- card content -->
         @for(item of model?.items;track item?.id){
-          <ion-card class="card-item">
+          @if(item?.quantity > 0){
+            <ion-card class="card-item" mode="ios">
             <ion-item lines="none">
               <ion-thumbnail slot="start">
                 <ion-img [src]="item?.cover"></ion-img>
@@ -79,7 +84,47 @@ import { CartService } from 'src/app/services/cart.service';
               </ion-col>
             </ion-item>
           </ion-card>
+          }
         }
+
+        <!-- apply coupon -->
+        <ion-list>
+          <ion-item-divider mode="md" color="light">
+            <ion-label class="ion-no-margin" color="dark">
+              Offers & Benefits
+            </ion-label>
+          </ion-item-divider>
+
+          @if(!selectedCoupon){
+            <ion-card mode="ios">
+              <ion-item 
+                [detail]="true" 
+                class="offer"
+                (click)="applyCoupon = true">
+                <ion-label>Apply Coupon</ion-label>
+              </ion-item>
+            </ion-card>
+          }@else{
+            <ion-item class="offer selected_coupon">
+              <ion-label color="dark">
+                "{{ selectedCoupon?.code }}" applied
+                <p>
+                  <ion-text color="success">
+                    <strong>{{ currency }}{{ selectedCoupon?.saved | number: '0.2-2'}}</strong>
+                  </ion-text>
+                  <ion-text color="dark"> coupon savings</ion-text>
+                </p>
+              </ion-label>
+              <ion-button  
+                fill="clear" 
+                color="danger"
+                strong="true"
+                (click)="removeCoupon()">
+                <ion-text>Remove</ion-text>
+              </ion-button>
+            </ion-item>
+          }
+        </ion-list>
 
         <!-- Card details -->
         <ion-list class="builling">
@@ -96,6 +141,15 @@ import { CartService } from 'src/app/services/cart.service';
               </ion-text>
             </ion-item>
 
+            @if(selectedCoupon){
+              <ion-item>
+                <ion-label class="dark">Item Discount</ion-label>
+                <ion-text color="success" slot="end">
+                   - {{ cartService.currency }}{{ selectedCoupon?.saved | number:'0.2-2'}}
+                </ion-text>
+              </ion-item>
+            }
+
             <ion-item class="delivery-fee" lines="none ">
               <ion-label color="dark">Delivery fee</ion-label>
               <ion-text color="dark" slot="end">
@@ -103,6 +157,15 @@ import { CartService } from 'src/app/services/cart.service';
                 {{ model?.total_delivery_charge | number:'0.2-2' }}
               </ion-text>
             </ion-item>
+
+            @if(model?.tax && model?.tax > 0){
+              <ion-item>
+                <ion-label color="dark">Taxes</ion-label>
+                <ion-text color="dark" slot="end">
+                  {{ cartService.currency }}{{ model?.tax | number:'0.2-2'}}
+                </ion-text>
+              </ion-item>
+            }
 
             <ion-item class="dashedBorderTop" lines="none ">
               <ion-label color="dark"><strong>To pay</strong></ion-label>
@@ -115,17 +178,42 @@ import { CartService } from 'src/app/services/cart.service';
             </ion-item>
           </ion-item-group>
         </ion-list>
+
+        <!-- coupons modal-->
+        <ion-modal
+          #coupon_modal
+          (didDismmiss) = "applyCoupon = false"
+          [isOpen]="applyCoupon">
+
+          <ng-template>
+            <app-coupons
+              [orderTotal]="model?.totalPrice"
+              (close)="closeCouponModal($event, coupon_modal)">
+            </app-coupons>
+          </ng-template>
+
+        </ion-modal>
       }@else{
         <div class="empty-screen" align="center">
           <ion-icon name="bag-handle-outline" color="primary"></ion-icon>
           <p>No Items available</p>
         </div>
       }
-      
-
     </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button
+          mode="ios"  
+          expand="block" 
+          strong="true" 
+          color="primary">
+          <ion-text>Checkout</ion-text>
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
   `,
-  styles:`
+  styles: `
       ion-content{
         ion-item.total-item{
           align-items:center;
@@ -223,16 +311,18 @@ import { CartService } from 'src/app/services/cart.service';
       font-size:10rem;
     }
   }
-  `,
+  `
 })
-export class CartPage implements OnInit, OnDestroy{
+export class CartPage implements OnInit, OnDestroy {
 
   private router = inject(Router)
   public cartService = inject(CartService)
   previousUrl !: string
   cartSub !: Subscription
-  model:any = null 
-
+  model: any = null
+  selectedCoupon !: any
+  applyCoupon = false
+  currency = Strings.CURRENCY
 
   ngOnInit() {
     this.urlCheck()
@@ -248,21 +338,34 @@ export class CartPage implements OnInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
-    if(this.cartSub) this.cartSub.unsubscribe()
+    if (this.cartSub) this.cartSub.unsubscribe()
   }
 
-  urlCheck(){
+  urlCheck() {
     const route_url = this.router.url //get current url
     const urlParts = route_url.split('/') // remove / get table
     urlParts.pop(); // remove last table item (cart)
     this.previousUrl = urlParts.join('/') //get new url (/home/gifts/id || /home)
   }// definition de l'url de retour (defaultHref)
 
-  addQuantity(item:any){
+  addQuantity(item: any) {
     this.cartService.addQuantity(item)
   }
 
-  removeQuantity(item:any){
+  removeQuantity(item: any) {
     this.cartService.removeQuantity(item)
+  }
+
+  closeCouponModal(coupon: any, couponModal: IonModal) {
+    console.log('counpon data', coupon)
+    if (coupon) {
+      this.selectedCoupon = coupon;
+      this.model.grandTotal -= this.selectedCoupon?.saved
+    }
+    couponModal.dismiss()
+  }//applique le coupon selectionné et ferme du modal coupon
+
+  removeCoupon(){
+
   }
 }

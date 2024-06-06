@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class ApiService {
 
-  items: any[] = [
+  private items: any[] = [
     {
       id: '1',
       name: 'Surprise Gift Basket',
@@ -134,12 +134,63 @@ export class ApiService {
     },
   ];
 
-  getItems():any[]{
-    return this.items;
+  private coupons: any[] = [
+    {
+      id: '1',
+      code: 'TRYNEW',
+      discount: 20,
+      isPercentage: true,
+      description: 'Use code TRYNEW & get 20% off',
+      isActive: true,
+      expiryDate: "2023-08-15T18:30:00",
+      minimumOrderAmount: 499,
+      upto_discount: 200,
+    },
+    {
+      id: '2',
+      code: 'FREESHIP',
+      discount: 100,
+      isPercentage: false,
+      description: 'Flat ₹100 off',
+      isActive: true,
+      expiryDate: "2023-09-30T23:59:59",
+    },
+    {
+      id: '3',
+      code: 'SALE50',
+      discount: 50,
+      isPercentage: true,
+      description: 'Big Sale - Flat 50% off on everything',
+      isActive: true,
+      expiryDate: "2023-08-31T23:59:59",
+      minimumOrderAmount: 1000,
+      upto_discount: 550,
+    },
+    {
+      id: '4',
+      code: 'NEW50',
+      discount: 50,
+      isPercentage: true,
+      description: 'New customer offer - Flat 50% off on everything',
+      isActive: true,
+      expiryDate: "2023-08-31T23:59:59",
+      minimumOrderAmount: 399,
+      upto_discount: 250,
+    },
+  ];
+
+  /* Gift-Shop */
+
+  getItems(): any[] {
+    return this.items
   }
 
-  getItem(id:string):any{
+  getItem(id: string): any {
     return this.items.find((item) => item.id === id)
   }
 
+  /* Coupons */
+  getCoupons() {
+    return this.coupons.filter((coupon) => coupon.isActive === true)
+  }
 }
